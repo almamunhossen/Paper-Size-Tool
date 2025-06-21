@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Paper Size Tool</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f4f4f4;
+      margin: 20px auto;
+      padding: 20px;
+      max-width: 1000px;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: #2c3e50;
+    }
+
+    h1 {
+      margin-bottom: 5px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #7f8c8d;
+      margin-bottom: 20px;
+    }
+
+    .info {
+      background: #e8f4fc;
+      padding: 15px;
+      margin-bottom: 25px;
+      border-left: 5px solid #3498db;
+      border-radius: 0 5px 5px 0;
+    }
+
+    select, input {
+      padding: 10px;
+      margin: 8px 0;
+      font-size: 16px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    select {
+      width: 100%;
+      max-width: 300px;
+    }
+
+    input {
+      width: 228px;
+    }
+
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      margin: 5px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    .select-group {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      display: none;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    table th, table td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: center;
+    }
+
+    table th {
+      background-color: #3498db;
+      color: white;
+      position: sticky;
+      top: 0;
+    }
+
+    #output {
+      margin: 20px 0;
+      padding: 15px;
+      font-weight: bold;
+      color: #2c3e50;
+      text-align: center;
+      background: #ecf0f1;
+      border-radius: 5px;
+    }
+
+    /* Row styling */
+    #paperBody tr,
+    #envelopeTable tbody tr,
+    #proportionalBody tr {
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    #paperBody tr:hover,
+    #envelopeTable tbody tr:hover,
+    #proportionalBody tr:hover {
+      background-color: #e8f4fc;
+      transform: scale(1.01);
+    }
+
+    tr.active {
+      background-color: #d6eaf8 !important;
+      box-shadow: inset 0 0 0 2px #3498db;
+    }
+
+    .size-category {
+      margin-top: 30px;
+      border-bottom: 2px solid #3498db;
+      padding-bottom: 5px;
+      color: #3498db;
+      font-weight: bold;
+      background-color: #f8f9fa;
+    }
+
+    .calculator {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 5px;
+      margin: 20px 0;
+      display: none;
+    }
+
+    .calculator h3 {
+      margin-top: 0;
+      color: #2c3e50;
+    }
+
+    .calculator-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+
+    .calculator-result {
+      font-size: 18px;
+      font-weight: bold;
+      margin-top: 15px;
+      padding: 10px;
+      background: #e8f4fc;
+      border-radius: 4px;
+    }
+
+    .icon {
+      width: 20px;
+      height: 20px;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    .add-custom-size {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 5px;
+    }
+
+    .add-custom-size h3 {
+      margin-top: 0;
+    }
+
+    .size-inputs {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        margin: 10px;
+        padding: 15px;
+      }
+      
+      .select-group {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+      
+      table {
+        font-size: 14px;
+      }
+      
+      table th, table td {
+        padding: 8px;
+      }
+    }
+
+    /* Color coding for different size types */
+    .A-series { background-color: #e8f8f5; }
+    .B-series { background-color: #fef9e7; }
+    .C-series { background-color: #f4ecf7; }
+    .custom-series { background-color: #eaf2f8; }
+  </style>
+</head>
+<body>
+
+  <h1>Printing Paper Size Tool</h1>
+  <div class="subtitle">Paper, Envelope & Layout Calculator</div>
+
+  <div class="info">
+    <p><strong>Standard Sheet Size:</strong> 64×90 cm | <strong>Sticker Size:</strong> 100×70 mm</p>
+    <p>Select a mode and size type to begin, or add your custom sizes.</p>
+  </div>
+
+  <div class="select-group">
+    <select id="modeSelector">
+      <option value="standard">Standard Sizes</option>
+      <option value="proportional">Proportional Sizes</option>
+      <option value="calculator">Sheet Calculator</option>
+    </select>
+    
+    <select id="sizeSelector">
+      <option value="paper">Paper Sizes</option>
+      <option value="envelope">Envelope Sizes</option>
+    </select>
+    
+    <select id="paperTypeSelector">
+      <option value="A">A Series</option>
+      <option value="B">B Series</option>
+      <option value="C">C Series</option>
+      <option value="custom">Custom Sizes</option>
+    </select>
+  </div>
+
+  <!-- Standard Paper Cutting Table -->
+  <table id="paperTable">
+    <thead>
+      <tr>
+        <th>Size Name</th>
+        <th>Millimeters</th>
+        <th>Centimeters</th>
+        <th>Inches</th>
+      </tr>
+    </thead>
+    <tbody id="paperBody">
+      <!-- Content added by JS -->
+    </tbody>
+  </table>
+
+  <!-- Proportional Paper Table -->
+  <table id="proportionalTable" style="display: none;">
+    <thead>
+      <tr>
+        <th>Ratio</th>
+        <th>Size Name</th>
+        <th>Millimeters</th>
+        <th>Centimeters</th>
+        <th>Inches</th>
+      </tr>
+    </thead>
+    <tbody id="proportionalBody">
+      <!-- Content added by JS -->
+    </tbody>
+  </table>
+
+  <!-- Envelope Table -->
+  <table id="envelopeTable">
+    <thead>
+      <tr>
+        <th>Envelope Name</th>
+        <th>Millimeters</th>
+        <th>Centimeters</th>
+        <th>Inches</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTIwIDhIMTJMMTAgNUg0QzIuOSA1IDIgNS45IDIgN3YxMGMwIDEuMSAwLjkgMiAyIDJoMTZjMS4xIDAgMi0wLjkgMi0yVjEwQzIyIDguOSAyMS4xIDggMjAgOHoiIGZpbGw9IiMzNDk4ZGIiLz48L3N2Zz4=" class="icon">C3</td><td>324 × 458</td><td>32.4 × 45.8</td><td>12.75 × 18.03</td></tr>
+      <tr><td><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTIwIDhIMTJMMTAgNUg0QzIuOSA1IDIgNS45IDIgN3YxMGMwIDEuMSAwLjkgMiAyIDJoMTZjMS4xIDAgMi0wLjkgMi0yVjEwQzIyIDguOSAyMS4xIDggMjAgOHoiIGZpbGw9IiMzNDk4ZGIiLz48L3N2Zz4=" class="icon">C4</td><td>229 × 324</td><td>22.9 × 32.4</td><td>9.01 × 12.75</td></tr>
+      <tr><td><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTIwIDhIMTJMMTAgNUg0QzIuOSA1IDIgNS45IDIgN3YxMGMwIDEuMSAwLjkgMiAyIDJoMTZjMS4xIDAgMi0wLjkgMi0yVjEwQzIyIDguOSAyMS4xIDggMjAgOHoiIGZpbGw9IiMzNDk4ZGIiLz48L3N2Zz4=" class="icon">C5</td><td>162 × 229</td><td>16.2 × 22.9</td><td>6.37 × 9.01</td></tr>
+      <tr><td><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTIwIDhIMTJMMTAgNUg0QzIuOSA1IDIgNS45IDIgN3YxMGMwIDEuMSAwLjkgMiAyIDJoMTZjMS4xIDAgMi0wLjkgMi0yVjEwQzIyIDguOSAyMS4xIDggMjAgOHoiIGZpbGw9IiMzNDk4ZGIiLz48L3N2Zz4=" class="icon">C6</td><td>114 × 162</td><td>11.4 × 16.2</td><td>4.48 × 6.37</td></tr>
+      <tr><td><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTIwIDhIMTJMMTAgNUg0QzIuOSA1IDIgNS45IDIgN3YxMGMwIDEuMSAwLjkgMiAyIDJoMTZjMS4xIDAgMi0wLjkgMi0yVjEwQzIyIDguOSAyMS4xIDggMjAgOHoiIGZpbGw9IiMzNDk4ZGIiLz48L3N2Zz4=" class="icon">C7</td><td>83 × 112</td><td>8.3 × 11.2</td><td>3.26 × 4.40</td></tr>
+      <tr><td><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTIwIDhIMTJMMTAgNUg0QzIuOSA1IDIgNS45IDIgN3YxMGMwIDEuMSAwLjkgMiAyIDJoMTZjMS4xIDAgMi0wLjkgMi0yVjEwQzIyIDguOSAyMS4xIDggMjAgOHoiIGZpbGw9IiMzNDk4ZGIiLz48L3N2Zz4=" class="icon">DL</td><td>110 × 220</td><td>11 × 22</td><td>4.33 × 8.66</td></tr>
+      <tr><td><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTIwIDhIMTJMMTAgNUg0QzIuOSA1IDIgNS45IDIgN3YxMGMwIDEuMSAwLjkgMiAyIDJoMTZjMS4xIDAgMi0wLjkgMi0yVjEwQzIyIDguOSAyMS4xIDggMjAgOHoiIGZpbGw9IiMzNDk4ZGIiLz48L3N2Zz4=" class="icon">i1</td><td>62 × 94</td><td>6 × 9</td><td>2.44 × 3.7</td></tr>
+      <tr><td><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTIwIDhIMTJMMTAgNUg0QzIuOSA1IDIgNS45IDIgN3YxMGMwIDEuMSAwLjkgMiAyIDJoMTZjMS4xIDAgMi0wLjkgMi0yVjEwQzIyIDguOSAyMS4xIDggMjAgOHoiIGZpbGw9IiMzNDk4ZGIiLz48L3N2Zz4=" class="icon">i2</td><td>70 × 100</td><td>7 × 10</td><td>2.75 × 3.93</td></tr>
+      <tr><td><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTIwIDhIMTJMMTAgNUg0QzIuOSA1IDIgNS45IDIgN3YxMGMwIDEuMSAwLjkgMiAyIDJoMTZjMS4xIDAgMi0wLjkgMi0yVjEwQzIyIDguOSAyMS4xIDggMjAgOHoiIGZpbGw9IiMzNDk4ZGIiLz48L3N2Zz4=" class="icon">i3</td><td>80 × 215</td><td>8 × 21.5</td><td>3.15 × 8.46</td></tr>
+      <tr><td><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTIwIDhIMTJMMTAgNUg0QzIuOSA1IDIgNS45IDIgN3YxMGMwIDEuMSAwLjkgMiAyIDJoMTZjMS4xIDAgMi0wLjkgMi0yVjEwQzIyIDguOSAyMS4xIDggMjAgOHoiIGZpbGw9IiMzNDk4ZGIiLz48L3N2Zz4=" class="icon">i5</td><td>95 × 122</td><td>9.5 × 12.2</td><td>3.74 × 4.80</td></tr>
+      <tr><td><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTIwIDhIMTJMMTAgNUg0QzIuOSA1IDIgNS45IDIgN3YxMGMwIDEuMSAwLjkgMiAyIDJoMTZjMS4xIDAgMi0wLjkgMi0yVjEwQzIyIDguOSAyMS4xIDggMjAgOHoiIGZpbGw9IiMzNDk4ZGIiLz48L3N2Zz4=" class="icon">i6</td><td>125 × 175</td><td>12.5 × 17.5</td><td>4.92 × 6.89</td></tr>
+      <tr><td><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTIwIDhIMTJMMTAgNUg0QzIuOSA1IDIgNS45IDIgN3YxMGMwIDEuMSAwLjkgMiAyIDJoMTZjMS4xIDAgMi0wLjkgMi0yVjEwQzIyIDguOSAyMS4xIDggMjAgOHoiIGZpbGw9IiMzNDk4ZGIiLz48L3N2Zz4=" class="icon">5x7</td><td>133 × 184</td><td>13.3 × 18.4</td><td>5.24 × 7.24</td></tr>
+      <tr><td><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTIwIDhIMTJMMTAgNUg0QzIuOSA1IDIgNS45IDIgN3YxMGMwIDEuMSAwLjkgMiAyIDJoMTZjMS4xIDAgMi0wLjkgMi0yVjEwQzIyIDguOSAyMS4xIDggMjAgOHoiIGZpbGw9IiMzNDk4ZGIiLz48L3N2Zz4=" class="icon">i9</td><td>152 × 216</td><td>15.2 × 21.6</td><td>5.98 × 8.50</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Sheet Calculator -->
+  <div class="calculator" id="sheetCalculator">
+    <h3><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTkgM0g1Yy0xLjEgMC0yIC45LTIgMnY0YzAgMS4xLjkgMiAyIDJoNGMxLjEgMCAyLS45IDItMlY1YzAtMS4xLS45LTItMi0yem0wIDEySDVjLTEuMSAwLTIgLjktMiAydjRjMCAxLjEuOSAyIDIgMmg0YzEuMSAwIDItLjkgMi0ydi00YzAtMS4xLS45LTItMi0yem0xMC0xMmgtNGMtMS4xIDAtMiAuOS0yIDJ2NGMwIDEuMS45IDIgMiAyaDRjMS4xIDAgMi0uOSAyLTJWNWMwLTEuMS0uOS0yLTItMnptMCAxMmgtNGMtMS4xIDAtMiAuOS0yIDJ2NGMwIDEuMS45IDIgMiAyaDRjMS4xIDAgMi0uOSAyLTJ2LTRjMC0xLjEtLjktMi0yLTJ6IiBmaWxsPSIjMzQ5OGRiIi8+PC9zdmc+" class="icon">Sheet Layout Calculator</h3>
+    <p>Calculate how many items fit on a standard 64×90 cm sheet.</p>
+    
+    <div class="calculator-grid">
+      <div>
+        <label for="itemWidth">Item Width (mm):</label>
+        <input type="number" id="itemWidth" value="100" min="1">
+      </div>
+      <div>
+        <label for="itemHeight">Item Height (mm):</label>
+        <input type="number" id="itemHeight" value="70" min="1">
+      </div>
+      <div>
+        <label for="spacing">Spacing (mm):</label>
+        <input type="number" id="spacing" value="5" min="0">
+      </div>
+      <div>
+        <label for="margin">Margin (mm):</label>
+        <input type="number" id="margin" value="10" min="0">
+      </div>
+    </div>
+    
+    <button id="calculateBtn">Calculate</button>
+    
+    <div class="calculator-result" id="calculatorResult">
+      Enter dimensions and click Calculate
+    </div>
+  </div>
+
+  <!-- Add Custom Size -->
+  <div class="add-custom-size">
+    <h3><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTE5IDEzaC02djZoLTJ2LTZINXYtMmg2VjVoMnY2aDZ2MnoiIGZpbGw9IiMzNDk4ZGIiLz48L3N2Zz4=" class="icon">Add Custom Size</h3>
+    <div class="size-inputs">
+      <input type="text" id="customName" placeholder="Name (e.g., My Size)">
+      <input type="number" id="customWidth" placeholder="Width (mm)" min="1">
+      <input type="number" id="customHeight" placeholder="Height (mm)" min="1">
+      <button id="addCustomBtn">Add to Custom Sizes</button>
+    </div>
+  </div>
+
+  <div id="output">Choose a category to view sizes</div>
+
+  <script>
+    // DOM Elements
+    const modeSelector = document.getElementById("modeSelector");
+    const sizeSelector = document.getElementById("sizeSelector");
+    const paperTypeSelector = document.getElementById("paperTypeSelector");
+    const paperTable = document.getElementById("paperTable");
+    const proportionalTable = document.getElementById("proportionalTable");
+    const envelopeTable = document.getElementById("envelopeTable");
+    const output = document.getElementById("output");
+    const paperBody = document.getElementById("paperBody");
+    const proportionalBody = document.getElementById("proportionalBody");
+    const sheetCalculator = document.getElementById("sheetCalculator");
+    const calculateBtn = document.getElementById("calculateBtn");
+    const calculatorResult = document.getElementById("calculatorResult");
+    const addCustomBtn = document.getElementById("addCustomBtn");
+
+    // Sheet size in mm (64×90 cm)
+    const SHEET_WIDTH = 640;
+    const SHEET_HEIGHT = 900;
+
+    // Paper size data organized by category
+    const paperSizes = {
+      A: [
+        { name: "A0", w: 841, h: 1189 },
+        { name: "A1", w: 594, h: 841 },
+        { name: "A2", w: 420, h: 594 },
+        { name: "A3", w: 297, h: 420 },
+        { name: "A4", w: 210, h: 297 },
+        { name: "A5", w: 148, h: 210 },
+        { name: "A6", w: 105, h: 148 },
+        { name: "A7", w: 74, h: 105 },
+        { name: "A8", w: 52, h: 74 },
+        { name: "A9", w: 37, h: 52 },
+        { name: "A10", w: 26, h: 37 }
+      ],
+      B: [
+        { name: "B0", w: 1000, h: 1414 },
+        { name: "B1", w: 707, h: 1000 },
+        { name: "B2", w: 500, h: 707 },
+        { name: "B3", w: 353, h: 500 },
+        { name: "B4", w: 250, h: 353 },
+        { name: "B5", w: 176, h: 250 },
+        { name: "B6", w: 125, h: 176 },
+        { name: "B7", w: 88, h: 125 },
+        { name: "B8", w: 62, h: 88 },
+        { name: "B9", w: 44, h: 62 },
+        { name: "B10", w: 31, h: 44 }
+      ],
+      C: [
+        { name: "C0", w: 917, h: 1297 },
+        { name: "C1", w: 648, h: 917 },
+        { name: "C2", w: 458, h: 648 },
+        { name: "C3", w: 324, h: 458 },
+        { name: "C4", w: 229, h: 324 },
+        { name: "C5", w: 162, h: 229 },
+        { name: "C6", w: 114, h: 162 },
+        { name: "C7", w: 81, h: 114 },
+        { name: "C8", w: 57, h: 81 },
+        { name: "C9", w: 40, h: 57 },
+        { name: "C10", w: 28, h: 40 }
+      ],
+      custom: JSON.parse(localStorage.getItem('customSizes')) || [
+        { name: "14×22 cm", w: 140, h: 220 },
+        { name: "17×25 cm", w: 170, h: 250 },
+        { name: "20×30 cm", w: 200, h: 300 },
+        { name: "23×33 cm", w: 230, h: 330 },
+        { name: "25×35 cm", w: 250, h: 350 },
+        { name: "40×30 cm", w: 400, h: 300 },
+        { name: "45×32.5 cm", w: 450, h: 325 },
+        { name: "50×35 cm", w: 500, h: 350 },
+        { name: "50×70 cm", w: 500, h: 700 }
+      ]
+    };
+
+    // Proportional sizes with common aspect ratios
+    const proportionalSizes = [
+      { ratio: "1:1 (Square)", sizes: [
+        { name: "100×100", w: 100, h: 100 },
+        { name: "150×150", w: 150, h: 150 },
+        { name: "200×200", w: 200, h: 200 }
+      ]},
+      { ratio: "√2:1 (ISO Standard)", sizes: [
+        { name: "A4-like", w: 210, h: 297 },
+        { name: "B5-like", w: 176, h: 250 }
+      ]},
+      { ratio: "4:3 (Traditional)", sizes: [
+        { name: "160×120", w: 160, h: 120 },
+        { name: "200×150", w: 200, h: 150 },
+        { name: "300×225", w: 300, h: 225 }
+      ]},
+      { ratio: "16:9 (Widescreen)", sizes: [
+        { name: "320×180", w: 320, h: 180 },
+        { name: "480×270", w: 480, h: 270 },
+        { name: "640×360", w: 640, h: 360 }
+      ]},
+      { ratio: "3:2 (35mm Film)", sizes: [
+        { name: "150×100", w: 150, h: 100 },
+        { name: "300×200", w: 300, h: 200 },
+        { name: "450×300", w: 450, h: 300 }
+      ]}
+    ];
+
+    // Helper functions
+    function toCM(val) {
+      return (val / 10).toFixed(1);
+    }
+
+    function toInch(val) {
+      return (val / 25.4).toFixed(2);
+    }
+
+    function calculateItemsPerSheet(itemWidth, itemHeight, spacing, margin) {
+      // Calculate available space after margins
+      const availableWidth = SHEET_WIDTH - (2 * margin);
+      const availableHeight = SHEET_HEIGHT - (2 * margin);
+      
+      // Calculate how many fit horizontally and vertically
+      const itemsHorizontally = Math.floor((availableWidth + spacing) / (itemWidth + spacing));
+      const itemsVertically = Math.floor((availableHeight + spacing) / (itemHeight + spacing));
+      
+      // Calculate total items for normal and rotated orientation
+      const normalOrientation = itemsHorizontally * itemsVertically;
+      const rotatedOrientation = Math.floor((availableWidth + spacing) / (itemHeight + spacing)) * 
+                                Math.floor((availableHeight + spacing) / (itemWidth + spacing));
+      
+      // Return the better option
+      if (normalOrientation >= rotatedOrientation) {
+        return {
+          count: normalOrientation,
+          orientation: 'normal',
+          horizontal: itemsHorizontally,
+          vertical: itemsVertically
+        };
+      } else {
+        return {
+          count: rotatedOrientation,
+          orientation: 'rotated',
+          horizontal: Math.floor((availableWidth + spacing) / (itemHeight + spacing)),
+          vertical: Math.floor((availableHeight + spacing) / (itemWidth + spacing))
+        };
+      }
+    }
+
+    // Render functions
+    function renderPaperTable(type) {
+      paperBody.innerHTML = "";
+      const sizes = paperSizes[type];
+      
+      // Add category heading
+      const headingRow = document.createElement("tr");
+      headingRow.innerHTML = `<td colspan="4" class="size-category ${type}-series">${type} Series Paper Sizes</td>`;
+      paperBody.appendChild(headingRow);
+      
+      sizes.forEach(size => {
+        const row = document.createElement("tr");
+        row.className = `${type}-series`;
+        row.innerHTML = `
+          <td><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTE5IDNINWMtMS4xIDAtMiAuOS0yIDJ2MTRjMCAxLjEuOSAyIDIgMmgxNGMxLjEgMCAyLS45IDItMlY1YzAtMS4xLS45LTItMi0yem0wIDE2SDVWNWgxNHYxNHoiIGZpbGw9IiMzNDk4ZGIiLz48L3N2Zz4=" class="icon">${size.name}</td>
+          <td>${size.w} × ${size.h}</td>
+          <td>${toCM(size.w)} × ${toCM(size.h)}</td>
+          <td>${toInch(size.w)} × ${toInch(size.h)}</td>
+        `;
+        row.addEventListener("click", () => {
+          output.textContent = `Selected Paper Size: ${size.name} (${size.w} × ${size.h} mm)`;
+          // Highlight selected row
+          document.querySelectorAll("#paperBody tr").forEach(r => r.classList.remove("active"));
+          row.classList.add("active");
+        });
+        paperBody.appendChild(row);
+      });
+    }
+
+    function renderProportionalTable() {
+      proportionalBody.innerHTML = "";
+      
+      proportionalSizes.forEach(ratioGroup => {
+        // Add ratio heading
+        const headingRow = document.createElement("tr");
+        headingRow.innerHTML = `<td colspan="5" class="size-category">${ratioGroup.ratio}</td>`;
+        proportionalBody.appendChild(headingRow);
+        
+        ratioGroup.sizes.forEach(size => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${ratioGroup.ratio}</td>
+            <td><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTE5IDNINWMtMS4xIDAtMiAuOS0yIDJ2MTRjMCAxLjEuOSAyIDIgMmgxNGMxLjEgMCAyLS45IDItMlY1YzAtMS4xLS45LTItMi0yem0wIDE2SDVWNWgxNHYxNHoiIGZpbGw9IiMzNDk4ZGIiLz48L3N2Zz4=" class="icon">${size.name}</td>
+            <td>${size.w} × ${size.h}</td>
+            <td>${toCM(size.w)} × ${toCM(size.h)}</td>
+            <td>${toInch(size.w)} × ${toInch(size.h)}</td>
+          `;
+          row.addEventListener("click", () => {
+            output.textContent = `Selected Proportional Size: ${size.name} (${ratioGroup.ratio})`;
+            // Highlight selected row
+            document.querySelectorAll("#proportionalBody tr").forEach(r => r.classList.remove("active"));
+            row.classList.add("active");
+          });
+          proportionalBody.appendChild(row);
+        });
+      });
+    }
+
+    // Event Listeners
+    document.querySelectorAll("#envelopeTable tbody tr").forEach(row => {
+      row.addEventListener("click", () => {
+        const envelopeName = row.cells[0].textContent;
+        output.textContent = `Selected Envelope Size: ${envelopeName}`;
+        // Highlight selected row
+        document.querySelectorAll("#envelopeTable tbody tr").forEach(r => r.classList.remove("active"));
+        row.classList.add("active");
+      });
+    });
+
+    // Mode selector change
+    modeSelector.addEventListener("change", () => {
+      const mode = modeSelector.value;
+      
+      // Hide all tables first
+      paperTable.style.display = "none";
+      proportionalTable.style.display = "none";
+      envelopeTable.style.display = "none";
+      sheetCalculator.style.display = "none";
+      
+      if (mode === "standard") {
+        paperTypeSelector.style.display = "block";
+        sizeSelector.style.display = "block";
+        if (sizeSelector.value === "paper") {
+          paperTable.style.display = "table";
+          renderPaperTable(paperTypeSelector.value);
+        } else {
+          envelopeTable.style.display = "table";
+        }
+      } else if (mode === "proportional") {
+        paperTypeSelector.style.display = "none";
+        if (sizeSelector.value === "paper") {
+          proportionalTable.style.display = "table";
+          renderProportionalTable();
+        } else {
+          envelopeTable.style.display = "table";
+        }
+      } else if (mode === "calculator") {
+        paperTypeSelector.style.display = "none";
+        sizeSelector.style.display = "none";
+        sheetCalculator.style.display = "block";
+      }
+    });
+
+    // Size selector change
+    sizeSelector.addEventListener("change", () => {
+      const value = sizeSelector.value;
+      const mode = modeSelector.value;
+      
+      if (mode === "standard") {
+        if (value === "paper") {
+          paperTable.style.display = "table";
+          proportionalTable.style.display = "none";
+          envelopeTable.style.display = "none";
+          renderPaperTable(paperTypeSelector.value);
+          output.textContent = "Paper cutting sizes (in mm, cm, inches):";
+        } else {
+          paperTable.style.display = "none";
+          proportionalTable.style.display = "none";
+          envelopeTable.style.display = "table";
+          output.textContent = "Envelope sizes (in mm, cm, inches):";
+        }
+      } else if (mode === "proportional") {
+        if (value === "paper") {
+          paperTable.style.display = "none";
+          proportionalTable.style.display = "table";
+          envelopeTable.style.display = "none";
+          renderProportionalTable();
+          output.textContent = "Proportional paper sizes:";
+        } else {
+          paperTable.style.display = "none";
+          proportionalTable.style.display = "none";
+          envelopeTable.style.display = "table";
+          output.textContent = "Envelope sizes (in mm, cm, inches):";
+        }
+      }
+    });
+
+    // Paper type selector change
+    paperTypeSelector.addEventListener("change", () => {
+      if (modeSelector.value === "standard" && sizeSelector.value === "paper") {
+        renderPaperTable(paperTypeSelector.value);
+      }
+    });
+
+    // Calculate button click
+    calculateBtn.addEventListener("click", () => {
+      const itemWidth = parseFloat(document.getElementById("itemWidth").value);
+      const itemHeight = parseFloat(document.getElementById("itemHeight").value);
+      const spacing = parseFloat(document.getElementById("spacing").value);
+      const margin = parseFloat(document.getElementById("margin").value);
+      
+      if (isNaN(itemWidth) || isNaN(itemHeight) || itemWidth <= 0 || itemHeight <= 0) {
+        calculatorResult.textContent = "Please enter valid dimensions";
+        return;
+      }
+      
+      const result = calculateItemsPerSheet(itemWidth, itemHeight, spacing, margin);
+      
+      if (result.orientation === 'normal') {
+        calculatorResult.innerHTML = `
+          <strong>${result.count} items</strong> fit on the sheet (${result.horizontal} × ${result.vertical})<br>
+          Normal orientation (${itemWidth} × ${itemHeight} mm)
+        `;
+      } else {
+        calculatorResult.innerHTML = `
+          <strong>${result.count} items</strong> fit on the sheet (${result.horizontal} × ${result.vertical})<br>
+          Rotated orientation (${itemHeight} × ${itemWidth} mm)
+        `;
+      }
+    });
+
+    // Add custom size button
+    addCustomBtn.addEventListener("click", () => {
+      const name = document.getElementById("customName").value.trim();
+      const width = parseFloat(document.getElementById("customWidth").value);
+      const height = parseFloat(document.getElementById("customHeight").value);
+      
+      if (!name || isNaN(width) || isNaN(height) || width <= 0 || height <= 0) {
+        alert("Please enter valid name and dimensions");
+        return;
+      }
+      
+      // Add to custom sizes
+      paperSizes.custom.push({
+        name: name,
+        w: width,
+        h: height
+      });
+      
+      // Save to localStorage
+      localStorage.setItem('customSizes', JSON.stringify(paperSizes.custom));
+      
+      // Update display if we're viewing custom sizes
+      if (modeSelector.value === "standard" && sizeSelector.value === "paper" && paperTypeSelector.value === "custom") {
+        renderPaperTable("custom");
+      }
+      
+      // Clear inputs
+      document.getElementById("customName").value = "";
+      document.getElementById("customWidth").value = "";
+      document.getElementById("customHeight").value = "";
+      
+      output.textContent = `Added custom size: ${name} (${width} × ${height} mm)`;
+    });
+
+    // Load default view
+    modeSelector.dispatchEvent(new Event("change"));
+    sizeSelector.dispatchEvent(new Event("change"));
+  </script>
+
+</body>
+</html>
